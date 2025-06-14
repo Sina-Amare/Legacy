@@ -1,32 +1,56 @@
-# scripts/seed.py
 import asyncio
+from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
 from app.models.dynasty import Dynasty
 
-# Initial data for the dynasties table
+# Initial data with Persian content and all required fields
 initial_dynasties = [
     {
-        "name": "Achaemenid Empire",
-        "country": "Persia",
-        "start_year": -550,
-        "end_year": -330,
-        "description": "The first Persian Empire, founded by Cyrus the Great."
+        "name": "شاهنشاهی هخامنشی", "country": "ایران", "start_year": -550, "end_year": -330,
+        "description": "نخستین امپراتوری جهانی که بر پایه حقوق بشر، تسامح دینی و یکپارچگی فرهنگی بنا نهاده شد.",
+        "image_url": "/images/dynasties/achaemenid.jpg",
+        "opening_brief": "سال ۵۵۹ پیش از میلاد. جهان در آستانه یک دگرگونی عظیم است. شما، کوروش، فرزند کمبوجیه یکم، شاه شاهان، رهبری قومی را بر عهده گرفته‌اید که خراج‌گزار مادها هستند. در شمال، امپراتوری قدرتمند ماد، در غرب، پادشاهی ثروتمند لیدیه و در شرق، بابل باشکوه، قدرت‌های زمانه هستند. آیا به عنوان یک حاکم دست‌نشانده باقی خواهید ماند یا سرنوشت خود را برای بنای بزرگترین امپراتوری جهان رقم خواهید زد؟"
     },
     {
-        "name": "Sasanian Empire",
-        "country": "Persia",
-        "start_year": 224,
-        "end_year": 651,
-        "description": "The last Persian imperial dynasty before the Muslim conquest."
+        "name": "شاهنشاهی اشکانی", "country": "ایران", "start_year": -247, "end_year": 224,
+        "description": "سلسله‌ای که فرهنگ هلنیستی را با فرهنگ ایرانی درآمیخت و برای قرن‌ها سدی استوار در برابر امپراتوری روم بود.",
+        "image_url": "/images/dynasties/parthian.jpg",
+        "opening_brief": "سال ۲۴۷ پیش از میلاد. میراث اسکندر در حال فروپاشی است. سلوکیان، جانشینان یونانی او، بر سرزمین ایران حکمرانی می‌کنند، اما قدرتشان متزلزل است. شما، ارشک، رهبر قبیله پرنی، فرصت را برای شورش غنیمت می‌شمارید. در غرب، سلوکیان و در دوردست، جمهوری روم در حال ظهور است. آیا می‌توانید با تکیه بر سواران جنگاور خود، استقلال را به ارمغان آورده و یک شاهنشاهی جدید و پایدار را بنیان نهید؟"
+    },
+    {
+        "name": "شاهنشاهی ساسانی", "country": "ایران", "start_year": 224, "end_year": 651,
+        "description": "آخرین شاهنشاهی بزرگ ایران باستان و احیاگر فرهنگ و دین زرتشتی که تأثیری عمیق بر تمدن اسلامی و جهان گذاشت.",
+        "image_url": "/images/dynasties/sasanian.jpg",
+        "opening_brief": "سال ۲۲۴ میلادی. اردشیر بابکان، حاکم پارس، علیه اردوان چهارم، آخرین شاه اشکانی، قیام کرده است. شما در نقش اردشیر، رویای احیای شکوه ایران باستان و بازگرداندن دین بهی را در سر دارید. اما رومیان در غرب و اقوام بیابان‌گرد در شرق، تهدیدهایی جدی هستند. آیا می‌توانید امپراتوری پراکنده را یکپارچه کرده و عظمت گذشته را بازگردانید؟"
+    },
+    {
+        "name": "دولت صفوی", "country": "ایران", "start_year": 1501, "end_year": 1736,
+        "description": "دولتی که با رسمی کردن مذهب تشیع، هویت ملی و مذهبی جدیدی به ایران بخشید و باعث احیای هنر و معماری شد.",
+        "image_url": "/images/dynasties/safavid.jpg",
+        "opening_brief": "سال ۱۵۰۱ میلادی. ایران‌زمین پس از قرن‌ها، تکه‌تکه و تحت حاکمیت‌های محلی است. شما، اسماعیل، نوجوانی سیزده ساله و رهبر طریقت صوفیانه صفوی، از تبعید بازگشته‌اید. با تکیه بر وفاداری بی‌چون و چرای قزلباشان، قصد دارید نه تنها یک حکومت، بلکه یک هویت جدید برای ایران بسازید. اما امپراتوری عثمانی در غرب و ازبکان در شرق، منتظر کوچکترین لغزش شما هستند."
+    },
+    {
+        "name": "دولت قاجار", "country": "ایران", "start_year": 1789, "end_year": 1925,
+        "description": "دورانی از گذار ایران به دوران مدرن، مواجهه با قدرت‌های استعماری و آغاز جنبش‌های مشروطه‌خواهی.",
+        "image_url": "/images/dynasties/qajar.jpg",
+        "opening_brief": "سال ۱۷۹۴ میلادی. پس از آشوب‌های طولانی پس از صفویه، شما، آقامحمدخان، رهبر ایل قاجار، سرانجام بر تمام رقبای داخلی پیروز شده‌اید. اکنون باید یک کشور از هم گسیخته را یکپارچه کنید و تهران را به عنوان پایتخت جدید برگزینید. اما در شمال، امپراتوری روسیه تزاری و در جنوب، بریتانیا، چشم به خاک و منابع شما دارند. چگونه ایران را در این دنیای جدید و بی رحم رهبری خواهید کرد؟"
+    },
+    {
+        "name": "دولت پهلوی", "country": "ایران", "start_year": 1925, "end_year": 1979,
+        "description": "عصر نوسازی سریع، تمرکزگرایی دولت، اصلاحات گسترده اجتماعی و اقتصادی و دگرگونی چهره ایران.",
+        "image_url": "/images/dynasties/pahlavi.jpg",
+        "opening_brief": "سال ۱۳۰۴ هجری شمسی (۱۹۲۵ میلادی). سلسله قاجار منقرض شده و مجلس مؤسسان، شما، رضاخان میرپنج، فرمانده کل قوا، را به عنوان شاه جدید ایران برگزیده است. کشور درگیر ضعف، ناامنی و عقب‌ماندگی است. شما رویای یک ایران مدرن، صنعتی و یکپارچه را در سر دارید. آیا می‌توانید با اصلاحات سریع و گاهی سخت‌گیرانه، کشور را به سمت دروازه‌های تمدن جدید هدایت کنید؟"
     }
 ]
 
-async def seed_data():
+def seed_data(db: Session):
+    """
+    Seeds the database with initial dynasty data.
+    Checks for existence before adding to prevent duplicates.
+    """
     print("Seeding initial data...")
-    db = SessionLocal()
     try:
         for dynasty_data in initial_dynasties:
-            # Check if dynasty already exists
             existing_dynasty = db.query(Dynasty).filter(Dynasty.name == dynasty_data["name"]).first()
             if not existing_dynasty:
                 db.add(Dynasty(**dynasty_data))
@@ -35,8 +59,8 @@ async def seed_data():
     except Exception as e:
         print(f"An error occurred: {e}")
         db.rollback()
-    finally:
-        db.close()
 
 if __name__ == "__main__":
-    asyncio.run(seed_data())
+    db = SessionLocal()
+    seed_data(db)
+    db.close()

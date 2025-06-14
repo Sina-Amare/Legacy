@@ -1,5 +1,4 @@
-# app/models/dynasty.py
-from sqlalchemy import Integer, String
+from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base_class import Base
 
@@ -11,3 +10,6 @@ class Dynasty(Base):
     start_year: Mapped[int] = mapped_column(Integer, nullable=False)
     end_year: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    # New field for the opening brief
+    opening_brief: Mapped[str | None] = mapped_column(Text, nullable=True)

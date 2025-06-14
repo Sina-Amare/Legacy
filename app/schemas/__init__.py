@@ -1,5 +1,2 @@
- 
-# app/schemas/__init__.py
-
-# Makes the Dynasty schema class available directly under the 'schemas' namespace
-from .dynasty import Dynasty
+# This file marks the 'schemas' directory as a Python package.
+# We use direct imports, so this can remain empty.
