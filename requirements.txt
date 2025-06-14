@@ -1,0 +1,13 @@
+# FastAPI and ASGI server
+fastapi
+uvicorn[standard]
+
+# Database ORM and migration
+sqlalchemy
+alembic
+psycopg2-binary
+
+# Pydantic and environment management
+pydantic[email]
+pydantic-settings
+python-dotenv
