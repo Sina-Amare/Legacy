@@ -1,39 +1,50 @@
-from app.worker import celery_app
-from app.ai.narrator import get_narrative_for_outcome
+import asyncio
+from app.celery_app import celery_app
+from app.ai.game_master import generate_next_story
 from app.db.session import SessionLocal
 from app.models.game import Game
+from app.schemas.game import Game as GameSchema
 from app.ws.manager import manager
 
 @celery_app.task
-def generate_narrative_task(game_id: int, context_for_ai: str):
+def process_decision_task(game_id: int, player_choice_text: str):
     """
-    A Celery task that generates a narrative in the background,
-    updates the database, and notifies the client via WebSocket.
+    A Celery task that calls the AI Game Master, updates the database,
+    and notifies the client via WebSocket with the full new game state.
     """
-    print(f"Celery Task: Generating narrative for game {game_id}...")
-    narrative = get_narrative_for_outcome(context_for_ai)
-    
+    print(f"Celery Task: Processing decision for game {game_id}...")
     db = SessionLocal()
     try:
-        # Fetch the game session from the database
         game = db.get(Game, game_id)
-        if game:
-            # Update the game record with the new narrative
-            game.last_narrative = narrative
-            db.add(game)
-            db.commit()
-            print(f"Celery Task: Narrative saved to DB for game {game_id}.")
-            
-            # Notify the client that the new narrative is ready
-            # This is a simplified approach for a single-server setup.
-            import asyncio
-            asyncio.run(manager.send_personal_message(f"NARRATIVE_READY:{narrative}", game_id))
-            print(f"Celery Task: WebSocket notification sent for game {game_id}.")
+        if not game:
+            return
+
+        game_schema = GameSchema.model_validate(game)
+        ai_result = generate_next_story(game_schema, player_choice_text)
+
+        game.last_narrative = ai_result.get("narrative")
+        game.current_story_text = ai_result.get("story_text")
+        game.current_options = ai_result.get("options")
+        
+        effects = ai_result.get("effects", {})
+        for resource, value in effects.items():
+            if hasattr(game, resource):
+                current_value = getattr(game, resource)
+                setattr(game, resource, current_value + value)
+        
+        game.current_year += 1
+        db.commit()
+        db.refresh(game)
+        
+        print(f"Celery Task: Game {game_id} updated in DB.")
+        
+        # Notify client with the complete new game state
+        updated_game_data = GameSchema.model_validate(game).model_dump()
+        asyncio.run(manager.send_json_message(updated_game_data, game_id))
+        print(f"Celery Task: WebSocket notification sent for game {game_id}.")
 
     except Exception as e:
-        print(f"Celery Task Error: Failed to update game with narrative. {e}")
+        print(f"Celery Task Error: {e}")
         db.rollback()
     finally:
         db.close()
-    
-    return narrative

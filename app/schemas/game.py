@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Any, Dict
 from .dynasty import Dynasty as DynastySchema
 
 class GameBase(BaseModel):
@@ -11,7 +12,8 @@ class GameCreate(GameBase):
 
 class Game(GameBase):
     """
-    Properties to return to the client, now including the last narrative.
+    Schema for returning the full game state to the client,
+    including the dynamically generated story and options.
     """
     id: int
     current_year: int
@@ -19,10 +21,10 @@ class Game(GameBase):
     stability: int
     military_strength: int
     religious_influence: int
-    current_decision_node_id: int | None = None
     dynasty: DynastySchema
     
-    # New field exposed in the API response.
+    current_story_text: str | None = None
+    current_options: Dict[str, str] | None = None
     last_narrative: str | None = None
 
     class Config:

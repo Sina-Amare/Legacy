@@ -1,36 +1,48 @@
-# migrations/env.py
 import os
 import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from pydantic import SecretStr
 
 from alembic import context
 
 # --- Project Specific Setup ---
-# This block is crucial for connecting Alembic to our FastAPI application.
+# This block is crucial for connecting Alembic to our FastAPI application's models.
 
 # Add the project's root directory to the Python path.
 # This allows Alembic to find our application modules.
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Import our application's settings and the Base model for SQLAlchemy.
+# Import our application's central settings and the Base model for SQLAlchemy.
 from app.core.config import settings
 from app.db.base_class import Base
-from app.models import * # This ensures all models are registered with Base.metadata
+# This import ensures all models that inherit from Base are registered with its metadata.
+from app.models import *
 
 # --- Standard Alembic Configuration ---
 
 config = context.config
 
-# Set the database URL from our central settings file.
-if settings.DATABASE_URL:
-    config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
-else:
-    raise ValueError("DATABASE_URL is not set in the environment variables.")
+# Set the database URL from our central settings file. This ensures that
+# Alembic and our FastAPI app always use the same database configuration.
+db_url = settings.DATABASE_URL
+url_str: str
 
-# Interpret the config file for Python logging.
+if isinstance(db_url, SecretStr):
+    # If the URL is a Pydantic SecretStr, unwrap it to get the actual string.
+    url_str = db_url.get_secret_value()
+else:
+    # If it's a regular string, use it directly.
+    url_str = str(db_url)
+
+if not url_str:
+     raise ValueError("DATABASE_URL is not set in the environment variables.")
+
+config.set_main_option('sqlalchemy.url', url_str)
+
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
@@ -54,9 +66,7 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     configuration = config.get_section(config.config_ini_section)
     if configuration:
-        # We manually set the sqlalchemy.url from our main settings object
-        # to ensure consistency between the app and migration scripts.
-        configuration['sqlalchemy.url'] = settings.DATABASE_URL
+        # The sqlalchemy.url is already correctly set in the configuration object.
         connectable = engine_from_config(
             configuration,
             prefix="sqlalchemy.",

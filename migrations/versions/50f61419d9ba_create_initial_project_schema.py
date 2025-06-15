@@ -1,8 +1,8 @@
-"""Create initial database schema
+"""Create initial project schema
 
-Revision ID: 0eac6cab562e
+Revision ID: 50f61419d9ba
 Revises: 
-Create Date: 2025-06-15 16:47:42.291885
+Create Date: 2025-06-15 23:10:47.959209
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0eac6cab562e'
+revision: str = '50f61419d9ba'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -57,14 +57,14 @@ def upgrade() -> None:
     op.create_table('games',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('dynasty_id', sa.Integer(), nullable=False),
-    sa.Column('current_decision_node_id', sa.Integer(), nullable=True),
+    sa.Column('current_story_text', sa.Text(), nullable=True),
+    sa.Column('current_options', sa.JSON(), nullable=True),
     sa.Column('current_year', sa.Integer(), nullable=False),
     sa.Column('treasury', sa.Integer(), nullable=False),
     sa.Column('stability', sa.Integer(), nullable=False),
     sa.Column('military_strength', sa.Integer(), nullable=False),
     sa.Column('religious_influence', sa.Integer(), nullable=False),
     sa.Column('last_narrative', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['current_decision_node_id'], ['decision_nodes.id'], name='fk_game_decision_node'),
     sa.ForeignKeyConstraint(['dynasty_id'], ['dynasties.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

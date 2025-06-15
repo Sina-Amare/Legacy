@@ -7,6 +7,7 @@ from app.db.base_class import Base
 class Dynasty(Base):
     """
     Represents a historical dynasty, including its unique starting conditions.
+    This model is the source of truth for all static dynasty information.
     """
     __tablename__ = 'dynasties'
 
@@ -19,11 +20,13 @@ class Dynasty(Base):
     image_url: Mapped[str | None] = mapped_column(String, nullable=True)
     opening_brief: Mapped[str | None] = mapped_column(Text, nullable=True)
     
+    # This is the new field that was missing before.
+    # It links a dynasty to its initial decision node in the (now deprecated) static tree.
     start_decision_node_id: Mapped[int | None] = mapped_column(
         Integer, 
         ForeignKey("decision_nodes.id", name="fk_dynasty_start_node"), 
         nullable=True
     )
-
-    # This new field stores the unique starting resources for this dynasty.
+    
+    # This field stores the unique starting resources for this dynasty.
     initial_resources: Mapped[dict | None] = mapped_column(JSON, nullable=True)
