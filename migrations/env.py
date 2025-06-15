@@ -1,3 +1,4 @@
+# migrations/env.py
 import os
 import sys
 from logging.config import fileConfig
@@ -11,13 +12,13 @@ from alembic import context
 # This block is crucial for connecting Alembic to our FastAPI application.
 
 # Add the project's root directory to the Python path.
-# This allows Alembic to find our application modules (like app.core.config).
+# This allows Alembic to find our application modules.
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import our application's settings and the Base model for SQLAlchemy.
 from app.core.config import settings
 from app.db.base_class import Base
-from app.models import * # Import all models to ensure they are registered with Base.metadata
+from app.models import * # This ensures all models are registered with Base.metadata
 
 # --- Standard Alembic Configuration ---
 
@@ -34,6 +35,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # --- Target Metadata Setup for Autogenerate ---
+# This tells Alembic what our SQLAlchemy models' state should be.
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:

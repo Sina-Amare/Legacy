@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base_class import Base
@@ -6,8 +6,7 @@ from app.db.base_class import Base
 
 class Dynasty(Base):
     """
-    Represents a historical dynasty in the database.
-    Each dynasty has a unique starting point in the decision tree.
+    Represents a historical dynasty, including its unique starting conditions.
     """
     __tablename__ = 'dynasties'
 
@@ -20,11 +19,11 @@ class Dynasty(Base):
     image_url: Mapped[str | None] = mapped_column(String, nullable=True)
     opening_brief: Mapped[str | None] = mapped_column(Text, nullable=True)
     
-    # This foreign key links the dynasty to its initial decision node.
-    # We provide an explicit name for the constraint to ensure Alembic
-    # can correctly manage upgrades and downgrades.
     start_decision_node_id: Mapped[int | None] = mapped_column(
         Integer, 
         ForeignKey("decision_nodes.id", name="fk_dynasty_start_node"), 
         nullable=True
     )
+
+    # This new field stores the unique starting resources for this dynasty.
+    initial_resources: Mapped[dict | None] = mapped_column(JSON, nullable=True)

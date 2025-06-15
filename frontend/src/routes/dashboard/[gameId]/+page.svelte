@@ -1,13 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import type { Game, DecisionNode } from '$lib/types';
 	import { writable } from 'svelte/store';
-    import type { Game } from '$lib/types';
 
 	export let data: PageData;
 
-	// Use Svelte stores for reactive updates to game state
-	const gameState = writable(data.game);
-	const decisionNodeState = writable(data.decisionNode);
+	// Use Svelte stores for reactive updates to game state.
+	// This makes the UI automatically update when the data changes.
+	const gameState = writable<Game | null>(data.game);
+	const decisionNodeState = writable<DecisionNode | null>(data.decisionNode);
 
 	let isLoadingDecision = false;
 
@@ -19,7 +20,10 @@
 	async function handleDecision(optionId: number) {
 		isLoadingDecision = true;
 		try {
-			const response = await fetch(`http://localhost:8000/api/v1/games/${$gameState.id}/decide`, {
+			const currentGame = $gameState;
+			if (!currentGame) return;
+
+			const response = await fetch(`http://localhost:8000/api/v1/games/${currentGame.id}/decide`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ option_id: optionId })
@@ -32,21 +36,23 @@
 
 			const updatedGame: Game = await response.json();
 			
-			// Update the game state store, which will reactively update the UI
+			// Update the game state store, which will reactively update the UI.
 			gameState.set(updatedGame);
 
-			// Fetch the next decision node based on the updated game state
+			// Fetch the next decision node based on the updated game state.
 			if (updatedGame.current_decision_node_id) {
-				const nextDecisionResponse = await fetch(`http://localhost:8000/api/v1/decisions/${updatedGame.current_decision_node_id}`);
+				const nextDecisionResponse = await fetch(
+					`http://localhost:8000/api/v1/decisions/${updatedGame.current_decision_node_id}`
+				);
 				if (nextDecisionResponse.ok) {
 					const nextNode = await nextDecisionResponse.json();
 					decisionNodeState.set(nextNode);
 				} else {
-					// Handle case where there is no next decision (end of branch)
+					// This happens if the next_node_id is valid but the node itself isn't found
 					decisionNodeState.set(null);
 				}
 			} else {
-				// Handle case where game ends
+				// This handles the end of a story branch (next_node_id is null).
 				decisionNodeState.set(null);
 			}
 
@@ -62,6 +68,9 @@
 		}
 	}
 
+    /**
+     * Determines the color class for a resource bar based on its value (0-100).
+     */
     function getStatusColor(value: number): string {
         if (value < 30) return 'bg-red-600';
         if (value < 70) return 'bg-yellow-500';
@@ -75,29 +84,24 @@
 	<header class="w-full max-w-7xl mb-8">
 		<div class="bg-white/5 p-6 rounded-xl shadow-lg backdrop-blur-lg">
 			<div class="grid grid-cols-2 md:grid-cols-5 gap-x-6 gap-y-4 items-center">
-				<!-- Year -->
 				<div class="text-center md:col-span-1">
 					<span class="text-lg text-primary/70">سال</span>
 					<p class="text-3xl font-bold text-accent-hover mt-1">
 						{$gameState.current_year > 0 ? $gameState.current_year : Math.abs($gameState.current_year) + ' ق.م'}
 					</p>
 				</div>
-                <!-- Stability -->
                 <div class="md:col-span-1">
                     <div class="flex justify-between items-end mb-1"><span class="text-lg text-primary/80">ثبات</span><span class="font-bold text-xl text-primary">{$gameState.stability}%</span></div>
                     <div class="w-full bg-black/30 rounded-full h-4 overflow-hidden border border-white/10"><div class="h-full rounded-full transition-all duration-500 {getStatusColor($gameState.stability)}" style="width: {$gameState.stability}%"></div></div>
                 </div>
-                <!-- Treasury -->
                 <div class="md:col-span-1">
                     <div class="flex justify-between items-end mb-1"><span class="text-lg text-primary/80">خزانه</span><span class="font-bold text-xl text-primary">{$gameState.treasury}</span></div>
                     <div class="w-full bg-black/30 rounded-full h-4 overflow-hidden border border-white/10"><div class="h-full rounded-full bg-amber-400" style="width: {Math.min(100, $gameState.treasury / 20)}%"></div></div>
                 </div>
-                <!-- Military -->
                 <div class="md:col-span-1">
                     <div class="flex justify-between items-end mb-1"><span class="text-lg text-primary/80">قدرت نظامی</span><span class="font-bold text-xl text-primary">{$gameState.military_strength}</span></div>
                     <div class="w-full bg-black/30 rounded-full h-4 overflow-hidden border border-white/10"><div class="h-full rounded-full bg-blue-500" style="width: {Math.min(100, $gameState.military_strength / 2)}%"></div></div>
                 </div>
-                <!-- Religion -->
                 <div class="md:col-span-1">
                     <div class="flex justify-between items-end mb-1"><span class="text-lg text-primary/80">نفوذ مذهبی</span><span class="font-bold text-xl text-primary">{$gameState.religious_influence}</span></div>
                     <div class="w-full bg-black/30 rounded-full h-4 overflow-hidden border border-white/10"><div class="h-full rounded-full bg-purple-500" style="width: {$gameState.religious_influence}%"></div></div>

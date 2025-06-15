@@ -1,8 +1,8 @@
-"""Initial schema
+"""Create initial database schema
 
-Revision ID: 5c51dcdba8ea
+Revision ID: bb22635d1f29
 Revises: 
-Create Date: 2025-06-15 12:59:23.004439
+Create Date: 2025-06-15 14:20:21.298846
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '5c51dcdba8ea'
+revision: str = 'bb22635d1f29'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -48,6 +48,7 @@ def upgrade() -> None:
     sa.Column('image_url', sa.String(), nullable=True),
     sa.Column('opening_brief', sa.Text(), nullable=True),
     sa.Column('start_decision_node_id', sa.Integer(), nullable=True),
+    sa.Column('initial_resources', sa.JSON(), nullable=True),
     sa.ForeignKeyConstraint(['start_decision_node_id'], ['decision_nodes.id'], name='fk_dynasty_start_node'),
     sa.PrimaryKeyConstraint('id')
     )

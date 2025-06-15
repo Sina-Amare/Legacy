@@ -26,7 +26,7 @@
 <div class="min-h-screen p-4 sm:p-8 flex flex-col items-center">
 	<header class="text-center mb-12">
 		<h1 class="text-6xl font-bold text-primary tracking-wider font-serif">میراث</h1>
-		<p class="text-xl text-primary/70 mt-2 font-serif">تاریخ‌های جایگزین خود را بسازید</p>
+		<p class="text-xl text-primary/70 mt-2 font-serif">تاریخ‌ را از نو بسازید</p>
 	</header>
 
 	<main class="max-w-4xl w-full">

@@ -33,7 +33,10 @@ def submit_decision(
     db: Session = Depends(deps.get_db),
     decision_in: DecisionSubmit,
 ) -> Any:
-    """Submit a player's decision and process the consequences."""
+    """
+    Submit a player's decision for a given game and process the consequences.
+    This is the core endpoint for gameplay interaction.
+    """
     game = get_game(db=db, game_id=game_id)
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
@@ -41,5 +44,7 @@ def submit_decision(
     try:
         updated_game = process_player_decision(db=db, game=game, decision_in=decision_in)
     except ValueError as e:
+        # A 400 Bad Request is suitable for an invalid player action
         raise HTTPException(status_code=400, detail=str(e))
+
     return updated_game
