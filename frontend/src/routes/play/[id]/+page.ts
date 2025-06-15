@@ -3,7 +3,7 @@ import type { Dynasty } from "$lib/types";
 
 /**
  * This load function runs before the page component is rendered.
- * It fetches the data needed for this specific dynasty page.
+ * It fetches the data needed for the selected dynasty page.
  */
 export const load: PageLoad = async ({ params, fetch }) => {
   const dynastyId = params.id;

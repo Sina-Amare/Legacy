@@ -9,7 +9,8 @@
 
 	/**
 	 * Handles the click event for the "Start Adventure" button.
-	 * It sends a POST request to the backend to create a new game session.
+	 * It sends a POST request to the backend to create a new game session
+	 * and then navigates the user to their new game dashboard.
 	 */
 	async function handleStartGame() {
 		isLoading = true;
@@ -27,10 +28,10 @@
 
 			const newGame: Game = await response.json();
 			console.log('New game created:', newGame);
-			alert(`ماجراجویی جدید با شناسه ${newGame.id} برای شما آغاز شد!`);
+			
+			// Navigate to the game dashboard for the newly created game
+			await goto(`/dashboard/${newGame.id}`);
 
-			// In the future, we will navigate to the game dashboard:
-			// await goto(`/dashboard/${newGame.id}`);
 		} catch (error) {
 			console.error('Error starting game:', error);
 			if (error instanceof Error) {

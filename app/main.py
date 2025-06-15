@@ -1,16 +1,18 @@
-# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.endpoints import dynasties, games
+from app.api.endpoints import dynasties, games, decisions
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.PROJECT_VERSION,
 )
 
-origins = ["http://localhost:5173"] # Frontend URL
+# CORS Middleware setup to allow requests from the frontend
+origins = [
+    "http://localhost:5173", # Default SvelteKit dev server
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -19,11 +21,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# The routers from other files are included here
+# Include all the API routers
 app.include_router(dynasties.router, prefix="/api/v1/dynasties", tags=["Dynasties"])
 app.include_router(games.router, prefix="/api/v1/games", tags=["Games"])
+app.include_router(decisions.router, prefix="/api/v1/decisions", tags=["Decisions"])
 
-# The root endpoint must use the main 'app' object's decorator
 @app.get("/")
 def read_root():
     """

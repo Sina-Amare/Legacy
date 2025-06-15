@@ -47,7 +47,7 @@
                                transform transition-all duration-300 ease-in-out
                                hover:shadow-2xl hover:shadow-accent/20 hover:scale-[1.02]"
 					>
-					<div class="flex flex-col sm:flex-row h-85">
+						<div class="flex flex-col sm:flex-row h-74">
 							<div class="sm:w-1/3 h-full">
 								<img
 									src={dynasty.image_url}
