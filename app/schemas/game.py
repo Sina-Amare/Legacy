@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .dynasty import Dynasty as DynastySchema # Import the dynasty schema
+from .dynasty import Dynasty as DynastySchema
 
 class GameBase(BaseModel):
     """Base properties for a game session."""
@@ -11,8 +11,7 @@ class GameCreate(GameBase):
 
 class Game(GameBase):
     """
-    Properties to return to the client via API.
-    This now includes the full related Dynasty object.
+    Properties to return to the client, now including the last narrative.
     """
     id: int
     current_year: int
@@ -21,9 +20,10 @@ class Game(GameBase):
     military_strength: int
     religious_influence: int
     current_decision_node_id: int | None = None
-
-    # This tells Pydantic to expect a nested Dynasty object in the response
     dynasty: DynastySchema
+    
+    # New field exposed in the API response.
+    last_narrative: str | None = None
 
     class Config:
         from_attributes = True

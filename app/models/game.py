@@ -1,11 +1,10 @@
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base_class import Base
 
 class Game(Base):
     """
-    Represents a single, ongoing game session in the database.
-    Default values are removed, as they will be set dynamically on creation.
+    Represents a single game session, now including a field for the last narrative.
     """
     __tablename__ = 'games'
 
@@ -20,5 +19,8 @@ class Game(Base):
     stability: Mapped[int]
     military_strength: Mapped[int]
     religious_influence: Mapped[int]
+    
+    # New field to store the last AI-generated narrative text for this game state.
+    last_narrative: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     dynasty = relationship("Dynasty")

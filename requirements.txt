@@ -1,13 +1,22 @@
 # FastAPI and ASGI server
 fastapi
 uvicorn[standard]
+python-multipart  # Required for WebSocket support
 
 # Database ORM and migration
 sqlalchemy
 alembic
 psycopg2-binary
 
-# Pydantic and environment management
+# Pydantic and settings management
 pydantic[email]
 pydantic-settings
 python-dotenv
+
+# Asynchronous Tasks and Message Broker
+celery
+redis
+
+# AI and Language Models
+langchain
+langchain-openai

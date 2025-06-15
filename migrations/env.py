@@ -54,6 +54,9 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     configuration = config.get_section(config.config_ini_section)
     if configuration:
+        # We manually set the sqlalchemy.url from our main settings object
+        # to ensure consistency between the app and migration scripts.
+        configuration['sqlalchemy.url'] = settings.DATABASE_URL
         connectable = engine_from_config(
             configuration,
             prefix="sqlalchemy.",
